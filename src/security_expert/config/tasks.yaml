@@ -1,0 +1,21 @@
+analysis_task:
+  description: >
+    Analyze the following technology stack description: '{tech_stack_description}'.
+    Your analysis must be swift and focused. Produce a final report in markdown format
+    that is easy to parse and display in a tabbed UI.
+  expected_output: >
+    A concise and well-structured markdown report with the following sections:
+
+    ## 🎯 Executive Summary
+    - A brief, 2-3 sentence overview of the overall security posture.
+    - The single most critical business impact identified.
+
+    ## 🚨 Top 3 Critical Risks
+    1. [Risk 1]: Brief description of the risk and its impact.
+    2. [Risk 2]: Brief description of the risk and its impact.
+    3. [Risk 3]: Brief description of the risk and its impact.
+
+    ## ✅ Top 3 Recommendations
+    1. [Fix for Risk 1]: A specific, actionable step to mitigate the risk.
+    2. [Fix for Risk 2]: A specific, actionable step to mitigate the risk.
+    3. [Fix for Risk 3]: A specific, actionable step to mitigate the risk.
