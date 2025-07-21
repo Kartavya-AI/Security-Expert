@@ -1,21 +1,58 @@
 analysis_task:
   description: >
-    Analyze the following technology stack description: '{tech_stack_description}'.
-    Your analysis must be swift and focused. Produce a final report in markdown format
-    that is easy to parse and display in a tabbed UI.
+    You are provided with a technology stack description that may include memory context 
+    from previous similar analyses: '{tech_stack_description}'.
+    
+    If memory context is provided (sections like "Previous Similar Analyses" or 
+    "Relevant Security Insights"), use this information to:
+    1. Identify patterns from similar past analyses
+    2. Learn from recurring security issues
+    3. Build upon previous recommendations that proved effective
+    4. Avoid repeating generic advice by focusing on specific, actionable items
+    
+    Your analysis must be swift, focused, and enhanced by historical intelligence.
+    Focus on the current technology stack while incorporating relevant learnings 
+    from the memory context.
+    
+    Produce a final report in markdown format that is easy to parse and display 
+    in a tabbed UI, ensuring your recommendations are specific to the current 
+    stack while leveraging historical insights.
+
   expected_output: >
     A concise and well-structured markdown report with the following sections:
 
     ## 🎯 Executive Summary
-    - A brief, 2-3 sentence overview of the overall security posture.
-    - The single most critical business impact identified.
+    - A brief, 2-3 sentence overview of the overall security posture
+    - The single most critical business impact identified
+    - If similar stacks were analyzed before, mention how this compares
 
     ## 🚨 Top 3 Critical Risks
-    1. [Risk 1]: Brief description of the risk and its impact.
-    2. [Risk 2]: Brief description of the risk and its impact.
-    3. [Risk 3]: Brief description of the risk and its impact.
+    1. **[Risk 1]**: Brief description of the risk and its impact
+       - *Memory Insight*: Reference any similar issues from past analyses if applicable
+    2. **[Risk 2]**: Brief description of the risk and its impact  
+       - *Memory Insight*: Reference any similar issues from past analyses if applicable
+    3. **[Risk 3]**: Brief description of the risk and its impact
+       - *Memory Insight*: Reference any similar issues from past analyses if applicable
 
-    ## ✅ Top 3 Recommendations
-    1. [Fix for Risk 1]: A specific, actionable step to mitigate the risk.
-    2. [Fix for Risk 2]: A specific, actionable step to mitigate the risk.
-    3. [Fix for Risk 3]: A specific, actionable step to mitigate the risk.
+    ## ✅ Top 3 Recommendations  
+    1. **[Fix for Risk 1]**: A specific, actionable step to mitigate the risk
+       - *Priority*: [High/Medium/Low]
+       - *Effort*: [Low/Medium/High]
+    2. **[Fix for Risk 2]**: A specific, actionable step to mitigate the risk
+       - *Priority*: [High/Medium/Low] 
+       - *Effort*: [Low/Medium/High]
+    3. **[Fix for Risk 3]**: A specific, actionable step to mitigate the risk
+       - *Priority*: [High/Medium/Low]
+       - *Effort*: [Low/Medium/High]
+
+    ## 🔍 Memory-Enhanced Insights
+    - Key patterns observed from similar technology stacks (if applicable)
+    - Lessons learned from previous analyses that apply to this stack
+    - Emerging trends or repeated issues worth noting
+    
+    ## ⚡ Quick Wins
+    - 2-3 immediate actions that can be implemented quickly for maximum security impact
+    
+    ## 🎯 Long-term Security Roadmap
+    - Strategic recommendations for ongoing security improvement
+    - Suggested timeline for implementing major security enhancements
