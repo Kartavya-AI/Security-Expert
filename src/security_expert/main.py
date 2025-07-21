@@ -1,21 +1,24 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
-from src.security_expert.crew import SecurityExpertCrew
+# main.py
 
-def run():
-    tech_stack_input = """
-    I have a Flutter mobile app for the frontend.
-    The backend is a REST API built with Node.js and Express.
-    We use MongoDB as our database.
-    Everything is deployed on AWS EC2 instances.
-    We also use S3 for file uploads from users.
-    I'm not sure about our VPC or WAF setup.
-    """
-    crew = SecurityExpertCrew()
-    result = crew.crew().kickoff(inputs={'tech_stack_description': tech_stack_input})
-    print("Here is the Security Analysis Report:")
-    print(result)
+# 1. Import your crew class from the crew.py file
+from crew import SecurityExpertCrew
 
+# This block runs when you execute `python main.py`
 if __name__ == "__main__":
-    run()
+    print("🚀 Starting the Security Expert Crew...")
+
+    # 2. Create an instance of your crew
+    sec_crew = SecurityExpertCrew()
+
+    # 3. Define the inputs your task needs
+    #    Make sure the key (e.g., 'technology_stack') matches the variable in your tasks.yaml
+    inputs = {
+        "technology_stack": "Next.js, Python, and MongoDB"
+    }
+
+    # 4. Call .kickoff() with the inputs to run the crew
+    result = sec_crew.kickoff(inputs=inputs)
+
+    print("\n\n✅ Crew execution finished!")
+    print("📄 Here is the final result:")
+    print(result)

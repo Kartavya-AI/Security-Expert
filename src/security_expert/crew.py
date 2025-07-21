@@ -3,6 +3,7 @@ from crewai import Agent, Task, Crew, Process, LLM
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
+from crewai.memory import LongTermMemory
 
 load_dotenv()
 
@@ -29,12 +30,18 @@ class SecurityExpertCrew:
             except Exception:
                 self.search_tool = None
 
+        # Initialize LocalAgentMemory for the agent
+        # This will store memories in a local file (`agent_memory.json` by default)
+        self.memory = LongTermMemory()
+
     @agent
     def security_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config['security_analyst'],
             llm=self.llm,
-            verbose=True
+            verbose=True,
+            # Assign memory to the agent
+            memory=self.memory
         )
 
     @task
