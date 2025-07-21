@@ -1,0 +1,8 @@
+[
+    {
+        "status": "error",
+        "error": "3 validation errors for Agent\nrole\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ngoal\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nbackstory\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
+        "timestamp": "2025-07-21 23:49:19",
+        "tech_stack": null
+    }
+]
