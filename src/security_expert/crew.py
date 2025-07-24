@@ -59,15 +59,29 @@ class SecurityExpertCrew:
     def analysis_task(self) -> Task:
         return Task(
             config=self.tasks_config['analysis_task'],
-            agent=self.security_analyst(),
-            context=[self.interview_task()]
+            agent=self.security_analyst()
         )
 
     @crew
     def crew(self) -> Crew:
-        return Crew(
-            agents=[self.security_interviewer(), self.security_analyst()],
-            tasks=[self.interview_task(), self.analysis_task()],
-            process=Process.sequential,
-            verbose=True
-        )
+        action = getattr(self, '_current_action', 'start_interview')
+
+        if action == 'perform_analysis':
+            return Crew(
+                agents=[self.security_analyst()],
+                tasks=[self.analysis_task()],
+                process=Process.sequential,
+                verbose=True
+            )
+        else:
+            return Crew(
+                agents=[self.security_interviewer()],
+                tasks=[self.interview_task()],
+                process=Process.sequential,
+                verbose=True
+            )
+
+    def kickoff(self, inputs):
+        self._current_action = inputs.get('action', 'start_interview')
+        crew_run = self.crew()
+        return crew_run.kickoff(inputs=inputs)

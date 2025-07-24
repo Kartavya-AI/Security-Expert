@@ -1,73 +1,42 @@
 interview_task:
   description: >
-    Conduct a comprehensive technical interview based on the initial technology stack: '{tech_stack_description}'.
-    
-    You must ask specific, targeted questions to gather complete information about:
-    
-    **Technology Details:**
-    - Exact versions of frameworks, libraries, and tools
-    - Programming language versions and specific features used
-    - Database types, versions, and configuration approaches
-    
-    **Infrastructure & Deployment:**
-    - Deployment environment (cloud provider, on-premise, hybrid)
-    - Containerization approach (Docker, Kubernetes, etc.)
-    - Load balancing and scaling mechanisms
-    - Network architecture and segmentation
-    
-    **Data & Security Context:**
-    - Types of data being processed (PII, financial, healthcare, etc.)
-    - Authentication and authorization mechanisms
-    - Compliance requirements (GDPR, HIPAA, PCI-DSS, etc.)
-    - Current security measures already in place
-    
-    **Integration & Dependencies:**
-    - Third-party services and APIs used
-    - External integrations and data flows
-    - Monitoring and logging solutions
-    
-    Ask follow-up questions based on the responses until you have a complete picture.
-    Be conversational but thorough.
-    
+    You are a security interviewer. Your goal is to ask a series of EXACTLY 5 questions to gather information, asking only one question at a time.
+
+    Your primary instruction is to analyze the `conversation_history` below to decide your next step.
+
+    - If the `conversation_history` is empty, you MUST start with the phrase "Okay, let's begin." and then ask ONLY Question 1.
+    - If the user has answered a question, you MUST ask the next question in the sequence.
+    - Once all 5 questions have been answered, you MUST NOT ask any more questions. Instead, you MUST output the "Complete Technology Profile" based on all the answers.
+
+    The 5 questions in sequence are:
+    1. "What are the specific versions of your main frameworks/platforms, programming languages, and database systems? Include any key third-party libraries or services."
+    2. "Where and how is this deployed? (cloud provider, on-premise, containerization, scaling approach, network setup)"
+    3. "What types of data does your application handle? Do you have any specific compliance requirements (GDPR, HIPAA, PCI-DSS, SOX, etc.)?"
+    4. "How do users authenticate and what authorization mechanisms do you use? Who has admin access and how is it managed?"
+    5. "What security tools, practices, or measures do you currently have in place? (monitoring, logging, firewalls, security scanning, etc.)"
+
+    This is the conversation so far:
+    {conversation_history}
+
   expected_output: >
-    A comprehensive technical profile document containing:
-    
-    ## 📋 Complete Technology Profile
-    
-    ### Tech Stack Details
-    - Framework/Platform: [Specific versions and configurations]
-    - Programming Languages: [Versions and key libraries]
-    - Database: [Type, version, configuration details]
-    - Additional Tools: [Build tools, testing frameworks, etc.]
-    
-    ### Infrastructure Profile
-    - Deployment: [Environment, cloud provider, scaling approach]
-    - Architecture: [Microservices, monolith, serverless, etc.]
-    - Network: [Security groups, VPC, load balancers]
-    - Storage: [File storage, CDN, backup strategies]
-    
-    ### Security Context
-    - Data Sensitivity: [Types of data, compliance needs]
-    - Current Security: [Existing measures, authentication methods]
-    - Access Patterns: [User types, admin access, API usage]
-    - Regulatory: [Compliance requirements, audit needs]
-    
-    ### Risk Profile
-    - Business Context: [Application purpose, user base size]
-    - Threat Model: [Primary concerns, attack vectors]
-    - Recovery Requirements: [RTO, RPO, backup needs]
+    - If the interview is ongoing: The single next question to ask the user.
+    - If the interview is complete: The final "Complete Technology Profile" in markdown format.
 
 analysis_task:
   description: >
-    Based on the comprehensive technical profile provided by the interviewer,
-    conduct a thorough security analysis of the complete technology stack and
-    implementation.
-    
-    Use the detailed information to identify specific vulnerabilities, 
+    Conduct a thorough security analysis based on the complete interview transcript and
+    technical profile provided below.
+
+    Use all the information from the transcript to identify specific vulnerabilities,
     configuration risks, and implementation-specific security concerns.
     Consider the business context, compliance requirements, and threat model
     when prioritizing risks and recommendations.
-    
+
+    **Interview Transcript and Technical Profile:**
+    ---
+    {conversation_history}
+    ---
+
   expected_output: >
     A detailed security analysis report in markdown format:
 

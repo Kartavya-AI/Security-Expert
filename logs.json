@@ -22,5 +22,25 @@
         "error": "1 validation error for Crew\nmemory\n  Input should be a valid boolean [type=bool_type, input_value=LongTermMemory(embedder_c... at 0x000001A8D7173A10>), input_type=LongTermMemory]\n    For further information visit https://errors.pydantic.dev/2.11/v/bool_type",
         "timestamp": "2025-07-24 20:42:49",
         "tech_stack": "Microservices with Docker and Kubernetes"
+    },
+    {
+        "status": "error",
+        "error": "Missing required template variable 'Template variable 'user_response' not found in inputs dictionary' in description",
+        "timestamp": "2025-07-24 21:18:04"
+    },
+    {
+        "status": "error",
+        "error": "litellm.AuthenticationError: geminiException - {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"API key not valid. Please pass a valid API key.\",\n    \"status\": \"INVALID_ARGUMENT\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"API_KEY_INVALID\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"generativelanguage.googleapis.com\"\n        }\n      },\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.LocalizedMessage\",\n        \"locale\": \"en-US\",\n        \"message\": \"API key not valid. Please pass a valid API key.\"\n      }\n    ]\n  }\n}\n",
+        "timestamp": "2025-07-24 21:25:46"
+    },
+    {
+        "status": "error",
+        "error": "'security_interviewer'",
+        "timestamp": "2025-07-24 21:46:22"
+    },
+    {
+        "status": "error",
+        "error": "'interview_task'",
+        "timestamp": "2025-07-24 22:31:26"
     }
 ]

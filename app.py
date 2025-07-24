@@ -96,45 +96,89 @@ st.markdown("""
     .metric-card { background: #667eea; color: white; padding: 1rem; border-radius: 10px; text-align: center; }
     .section-header { color: #eee; font-size: 1.2rem; font-weight: bold; margin: 1rem 0 0.5rem; border-bottom: 1px solid #444; padding-bottom: 0.2rem; }
     .process-indicator { background: #2a3a4a; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #17a2b8; }
+    .interview-phase { background: #2a3a4a; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #ffa500; }
+    .ready-for-analysis { background: #1e3a1e; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #28a745; }
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------- Logic --------------------
-def run_security_crew(tech_stack: str, api_key: str = None, serper_key: str = None) -> dict:
+def start_interview(tech_stack: str, api_key: str = None, serper_key: str = None) -> dict:
+    """Start the interview process with the first question"""
     try:
-        inputs = {'tech_stack_description': tech_stack}
         crew = SecurityExpertCrew(api_key=api_key, serper_key=serper_key)
-        result = crew.crew().kickoff(inputs=inputs)
-        
-        # The result now contains both interview and analysis phases
-        full_result = str(result)
-        
-        # Try to separate interview results and final analysis
-        interview_section = ""
-        analysis_section = full_result
-        
-        # Look for markers that might separate the phases
-        if "## 📋 Complete Technology Profile" in full_result:
-            parts = full_result.split("## 🎯 Executive Summary", 1)
-            if len(parts) == 2:
-                interview_section = parts[0]
-                analysis_section = "## 🎯 Executive Summary" + parts[1]
+        inputs = {
+            'tech_stack_description': tech_stack,
+            'conversation_history': "",
+            'user_response': "",
+            'action': 'start_interview'
+        }
+        result = crew.kickoff(inputs=inputs)
         
         return {
             "status": "success",
-            "analysis": analysis_section,
-            "interview_results": interview_section,
-            "full_result": full_result,
+            "message": str(result),
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "tech_stack": tech_stack,
-            "analysis_type": "comprehensive"
+            "type": "interview_question"
         }
     except Exception as e:
         error_info = {
             "status": "error",
             "error": str(e),
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "tech_stack": tech_stack,
+        }
+        log_error(error_info)
+        return error_info
+
+def continue_interview(user_response: str, conversation_history: str, api_key: str = None, serper_key: str = None) -> dict:
+    """Continue the interview with user's response"""
+    try:
+        crew = SecurityExpertCrew(api_key=api_key, serper_key=serper_key)
+        inputs = {
+            'tech_stack_description': "",
+            'user_response': user_response,
+            'conversation_history': conversation_history,
+            'action': 'continue_interview'
+        }
+        result = crew.kickoff(inputs=inputs)
+        
+        return {
+            "status": "success",
+            "message": str(result),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "type": "interview_question"
+        }
+    except Exception as e:
+        error_info = {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        log_error(error_info)
+        return error_info
+
+def perform_analysis(conversation_history: str, api_key: str = None, serper_key: str = None) -> dict:
+    """Perform final security analysis based on interview"""
+    try:
+        crew = SecurityExpertCrew(api_key=api_key, serper_key=serper_key)
+        inputs = {
+            'tech_stack_description': "",
+            'conversation_history': conversation_history,
+            'user_response': "",
+            'action': 'perform_analysis'
+        }
+        result = crew.kickoff(inputs=inputs)
+        
+        return {
+            "status": "success",
+            "analysis": str(result),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "type": "final_analysis"
+        }
+    except Exception as e:
+        error_info = {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         log_error(error_info)
         return error_info
@@ -172,22 +216,45 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "quick_input" not in st.session_state:
     st.session_state.quick_input = ""
+if "interview_phase" not in st.session_state:
+    st.session_state.interview_phase = "not_started"  # not_started, interviewing, ready_for_analysis, completed
+if "conversation_history" not in st.session_state:
+    st.session_state.conversation_history = ""
+if "initial_tech_stack" not in st.session_state:
+    st.session_state.initial_tech_stack = ""
 
 # -------------------- Main Header --------------------
 st.markdown("""
 <div class="main-header">
     <h1>🛡️ AI Security Expert</h1>
-    <p>Comprehensive Security Analysis through Intelligent Requirements Gathering</p>
+    <p>Interactive Security Analysis through Comprehensive Requirements Gathering</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Add process explanation
-st.markdown("""
-<div class="process-indicator">
-    <strong>🔄 How it works:</strong> Our AI experts will first conduct a detailed interview to understand your specific implementation, 
-    then provide tailored security analysis based on your exact setup, versions, deployment environment, and requirements.
-</div>
-""", unsafe_allow_html=True)
+if st.session_state.interview_phase == "not_started":
+    st.markdown("""
+    <div class="process-indicator">
+        <strong>🔄 How it works:</strong><br>
+        1. <strong>Start:</strong> Tell us about your tech stack<br>
+        2. <strong>Interview:</strong> Our AI expert will ask specific questions about your setup<br>
+        3. <strong>Analysis:</strong> Get a comprehensive, tailored security report<br>
+        4. <strong>Follow-up:</strong> Ask additional questions about the recommendations
+    </div>
+    """, unsafe_allow_html=True)
+elif st.session_state.interview_phase == "interviewing":
+    st.markdown("""
+    <div class="interview-phase">
+        <strong>📋 Interview Phase Active:</strong> Answer the questions below to help us understand your specific implementation. 
+        When you're ready, click "Generate Security Analysis" to get your tailored report.
+    </div>
+    """, unsafe_allow_html=True)
+elif st.session_state.interview_phase == "ready_for_analysis":
+    st.markdown("""
+    <div class="ready-for-analysis">
+        <strong>✅ Interview Complete:</strong> Ready to generate your comprehensive security analysis!
+    </div>
+    """, unsafe_allow_html=True)
 
 # -------------------- Sidebar --------------------
 with st.sidebar:
@@ -201,14 +268,58 @@ with st.sidebar:
         st.markdown(f'<div class="metric-card">{st.session_state.analysis_count}<br><small>Analyses</small></div>', unsafe_allow_html=True)
     with col2:
         st.markdown(f'<div class="metric-card">{len(st.session_state.messages)}<br><small>Messages</small></div>', unsafe_allow_html=True)
+    
+    # Show interview phase status
+    phase_emoji = {
+        "not_started": "⏸️",
+        "interviewing": "❓",
+        "ready_for_analysis": "✅",
+        "completed": "🎯"
+    }
+    phase_text = {
+        "not_started": "Not Started",
+        "interviewing": "Interview Active",
+        "ready_for_analysis": "Ready for Analysis",
+        "completed": "Analysis Complete"
+    }
+    st.markdown(f'<div class="metric-card">{phase_emoji.get(st.session_state.interview_phase, "❓")}<br><small>{phase_text.get(st.session_state.interview_phase, "Unknown")}</small></div>', unsafe_allow_html=True)
+    
     st.markdown("---")
+
+    # Show analysis button if ready
+    if st.session_state.interview_phase == "ready_for_analysis":
+        if st.button("🔍 Generate Security Analysis", type="primary"):
+            with st.spinner("🔬 Performing comprehensive security analysis..."):
+                analysis_result = perform_analysis(
+                    st.session_state.conversation_history,
+                    api_key or os.getenv("GEMINI_API_KEY"),
+                    serper_key or os.getenv("SERPER_API_KEY")
+                )
+                
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": "Security Analysis Complete",
+                    "analysis_data": analysis_result
+                })
+                
+                if analysis_result["status"] == "success":
+                    st.session_state.interview_phase = "completed"
+                    st.session_state.analysis_count += 1
+                    add_analysis_to_db(
+                        st.session_state.session_id,
+                        st.session_state.initial_tech_stack,
+                        st.session_state.conversation_history,
+                        analysis_result["analysis"],
+                        "comprehensive"
+                    )
+                st.rerun()
 
     # -------------------- Analysis History --------------------
     st.markdown('<div class="section-header">📜 Analysis History</div>', unsafe_allow_html=True)
     history = get_history_from_db(st.session_state.session_id)
 
     if not history:
-        st.info("No comprehensive analyses in the current session yet.")
+        st.info("No analyses in the current session yet.")
     else:
         with st.expander("View Past Analyses", expanded=False):
             for i, item in enumerate(history):
@@ -226,22 +337,58 @@ with st.sidebar:
                 """, unsafe_allow_html=True)
                 
                 if st.button(f"Re-run Analysis", key=f"history_btn_{i}"):
+                    # Reset session for new analysis
+                    st.session_state.interview_phase = "not_started"
+                    st.session_state.conversation_history = ""
+                    st.session_state.messages = []
                     st.session_state.quick_input = tech_stack
                     st.rerun()
+    
     st.markdown("---")
 
     st.markdown('<div class="section-header">🚀 Quick Start Examples</div>', unsafe_allow_html=True)
-    if st.button("🌐 Web Application"): st.session_state.quick_input = "React frontend with Node.js Express backend, MongoDB database"
-    if st.button("📱 Mobile Application"): st.session_state.quick_input = "Flutter mobile app with Firebase backend"
-    if st.button("☁️ Cloud Native Stack"): st.session_state.quick_input = "Microservices with Docker and Kubernetes"
-    if st.button("🤖 AI/ML Application"): st.session_state.quick_input = "Python ML application with TensorFlow and PostgreSQL"
-    if st.button("🏢 Enterprise System"): st.session_state.quick_input = "Java Spring Boot application with Oracle database"
+    if st.button("🌐 Web Application"): 
+        st.session_state.quick_input = "React frontend with Node.js Express backend, MongoDB database"
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.messages = []
+    if st.button("📱 Mobile Application"): 
+        st.session_state.quick_input = "Flutter mobile app with Firebase backend"
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.messages = []
+    if st.button("☁️ Cloud Native Stack"): 
+        st.session_state.quick_input = "Microservices with Docker and Kubernetes"
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.messages = []
+    if st.button("🤖 AI/ML Application"): 
+        st.session_state.quick_input = "Python ML application with TensorFlow and PostgreSQL"
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.messages = []
+    if st.button("🏢 Enterprise System"): 
+        st.session_state.quick_input = "Java Spring Boot application with Oracle database"
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.messages = []
+    
     st.markdown("---")
+    
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
         st.session_state.analysis_count = 0
+        st.session_state.interview_phase = "not_started"
+        st.session_state.conversation_history = ""
+        st.session_state.initial_tech_stack = ""
         st.rerun()
+    
+    if st.session_state.interview_phase == "interviewing":
+        if st.button("✅ Skip to Analysis", help="Skip remaining questions and proceed with current information"):
+            st.session_state.interview_phase = "ready_for_analysis"
+            st.rerun()
 
+# -------------------- Chat Display --------------------
 # -------------------- Chat Display --------------------
 with st.container():
     for msg in st.session_state.messages:
@@ -253,70 +400,107 @@ with st.container():
                 if "analysis_data" in msg:
                     data = msg["analysis_data"]
                     if data.get("status") == "success":
-                        # Show process completion indicator
-                        st.markdown(f'<div class="chat-message analysis-result"><strong>🛡️ Security Analysis Complete:</strong><br><em>Stack:</em> {data["tech_stack"]} <br><small>Analysis Type: {data.get("analysis_type", "comprehensive").title()} | {data["timestamp"]}</small></div>', unsafe_allow_html=True)
-                        
-                        # Parse and display the results in tabs
-                        if data.get("interview_results"):
-                            # Show both interview and analysis results
-                            full_parsed = parse_report(data["full_result"])
-                        else:
-                            # Show just analysis results
-                            full_parsed = parse_report(data["analysis"])
-                        
-                        if full_parsed:
-                            tabs = st.tabs([f"{k}" for k in full_parsed.keys()])
-                            for i, (tab, content) in enumerate(zip(tabs, full_parsed.values())):
-                                with tab: 
-                                    st.markdown(f'<div class="card">{content}</div>', unsafe_allow_html=True)
+                        if data.get("type") == "interview_question":
+                            st.markdown(f'<div class="chat-message interviewer-message"><strong>🤖 Security Expert:</strong><br>{data["message"]}</div>', unsafe_allow_html=True)
+                        elif data.get("type") == "final_analysis":
+                            st.markdown(f'<div class="chat-message analysis-result"><strong>🛡️ Security Analysis Complete:</strong><br><small>{data["timestamp"]}</small></div>', unsafe_allow_html=True)
+                            parsed_analysis = parse_report(data["analysis"])
+                            if parsed_analysis:
+                                # Default the first section to be open
+                                first_title = next(iter(parsed_analysis))
+                                for title, content in parsed_analysis.items():
+                                    with st.expander(title, expanded=(title == first_title)):
+                                        st.markdown(f'<div class="card">{content}</div>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<div class="chat-message error-result"><strong>❌ Analysis Error:</strong><br>{data["error"]}<br><small>{data.get("timestamp", "")}</small></div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="chat-message error-result"><strong>❌ Error:</strong><br>{data["error"]}<br><small>{data.get("timestamp", "")}</small></div>', unsafe_allow_html=True)
+                else:
+                    st.markdown(f'<div class="chat-message interviewer-message"><strong>🤖 Security Expert:</strong><br>{msg["content"]}</div>', unsafe_allow_html=True)
 
-# -------------------- Prompt Input & Processing --------------------
-prompt = st.session_state.quick_input or st.chat_input("💬 Describe your technology stack to begin the security interview...")
+# -------------------- Input Processing --------------------
+# Handle quick input
 if st.session_state.quick_input:
+    prompt = st.session_state.quick_input
     st.session_state.quick_input = ""
+else:
+    # Dynamic prompt based on phase
+    if st.session_state.interview_phase == "not_started":
+        prompt = st.chat_input("💬 Describe your technology stack to begin the security interview...")
+    elif st.session_state.interview_phase == "interviewing":
+        prompt = st.chat_input("💬 Answer the security expert's question...")
+    elif st.session_state.interview_phase == "completed":
+        prompt = st.chat_input("💬 Ask follow-up questions about your security analysis...")
+    else:
+        prompt = st.chat_input("💬 Type your message...")
 
 if prompt:
+    # Add user message
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("user"):
         st.markdown(f'<div class="chat-message user-message"><strong>You:</strong><br>{prompt}</div>', unsafe_allow_html=True)
 
     with st.chat_message("assistant"):
-        # Show progress indicator
-        progress_container = st.empty()
-        with progress_container:
-            st.markdown("""
-            <div class="process-indicator">
-                <strong>🔄 Starting comprehensive security analysis...</strong><br>
-                <small>
-                Phase 1: Requirements Gathering Interview<br>
-                Phase 2: Detailed Security Analysis<br>
-                This may take 2-3 minutes for a thorough assessment.
-                </small>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with st.spinner("🤖 Security experts are analyzing your tech stack..."):
-            data = run_security_crew(prompt, api_key or os.getenv("GEMINI_API_KEY"), serper_key or os.getenv("SERPER_API_KEY"))
-
-            if data["status"] == "success":
-                st.session_state.analysis_count += 1
-                add_analysis_to_db(
-                    st.session_state.session_id, 
-                    prompt, 
-                    data.get("interview_results", ""), 
-                    data["analysis"],
-                    data.get("analysis_type", "comprehensive")
+        if st.session_state.interview_phase == "not_started":
+            # Start the interview
+            st.session_state.initial_tech_stack = prompt
+            st.session_state.conversation_history += f"Initial tech stack: {prompt}\n\n"
+            
+            with st.spinner("🤖 Security expert is preparing interview questions..."):
+                result = start_interview(
+                    prompt,
+                    api_key or os.getenv("GEMINI_API_KEY"),
+                    serper_key or os.getenv("SERPER_API_KEY")
                 )
+                
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": result.get("message", ""),
+                    "analysis_data": result
+                })
+                
+                if result["status"] == "success":
+                    st.session_state.interview_phase = "interviewing"
+                    st.session_state.conversation_history += f"Interviewer: {result['message']}\n\n"
+                
+        elif st.session_state.interview_phase == "interviewing":
+            # Continue the interview
+            st.session_state.conversation_history += f"User: {prompt}\n\n"
+            
+            with st.spinner("🤖 Processing your response..."):
+                result = continue_interview(
+                    prompt,
+                    st.session_state.conversation_history,
+                    api_key or os.getenv("GEMINI_API_KEY"),
+                    serper_key or os.getenv("SERPER_API_KEY")
+                )
+                
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": result.get("message", ""),
+                    "analysis_data": result
+                })
+                
+                if result["status"] == "success":
+                    message = result["message"]
+                    st.session_state.conversation_history += f"Interviewer: {message}\n\n"
+                    
+                    if "Complete Technology Profile" in message or "📋 Complete Technology Profile" in message:
+                        st.session_state.interview_phase = "ready_for_analysis"
 
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": data.get("analysis", ""),
-                "analysis_data": data
-            })
+                    if any(phrase in message.lower() for phrase in [
+                        "thank you for the information",
+                        "that completes our interview",
+                        "ready to proceed with the analysis",
+                        "i have enough information",
+                        "ready for analysis"
+                    ]):
+                        st.session_state.interview_phase = "ready_for_analysis"
         
-        # Clear the progress indicator
-        progress_container.empty()
+        elif st.session_state.interview_phase == "completed":
+            st.markdown(f'<div class="chat-message interviewer-message"><strong>🤖 Security Expert:</strong><br>Thank you for your question: "{prompt}". For detailed follow-up analysis, please start a new session or refer to the comprehensive analysis above.</div>', unsafe_allow_html=True)
+            
+            st.session_state.messages.append({
+                "role": "assistant", 
+                "content": f"Thank you for your question: '{prompt}'. For detailed follow-up analysis, please start a new session or refer to the comprehensive analysis above."
+            })
     st.rerun()
