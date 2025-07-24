@@ -22,29 +22,30 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             session_id TEXT NOT NULL,
             tech_stack TEXT NOT NULL,
+            interview_results TEXT,
             analysis_summary TEXT NOT NULL,
+            analysis_type TEXT DEFAULT 'comprehensive',
             timestamp DATETIME NOT NULL
         )
     ''')
     conn.commit()
     conn.close()
 
-def add_analysis_to_db(session_id, tech_stack, summary):
+def add_analysis_to_db(session_id, tech_stack, interview_results, summary, analysis_type='comprehensive'):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
     cursor.execute('''
-        INSERT INTO analysis_history (session_id, tech_stack, analysis_summary, timestamp)
-        VALUES (?, ?, ?, ?)
-    ''', (session_id, tech_stack, summary, datetime.now()))
+        INSERT INTO analysis_history (session_id, tech_stack, interview_results, analysis_summary, analysis_type, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', (session_id, tech_stack, interview_results, summary, analysis_type, datetime.now()))
     conn.commit()
     conn.close()
 
 def get_history_from_db(session_id):
     conn = sqlite3.connect(DB_FILE)
-    # PARSE_DECLTYPES allows sqlite to recognize the DATETIME type
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT tech_stack, analysis_summary, timestamp FROM analysis_history WHERE session_id = ? ORDER BY timestamp DESC", (session_id,))
+    cursor.execute("SELECT tech_stack, interview_results, analysis_summary, analysis_type, timestamp FROM analysis_history WHERE session_id = ? ORDER BY timestamp DESC", (session_id,))
     rows = cursor.fetchall()
     conn.close()
     return rows
@@ -64,7 +65,6 @@ def log_error(error_details):
 
 # Initialize the database
 init_db()
-
 
 st.set_page_config(
     page_title="AI Security Expert",
@@ -90,10 +90,12 @@ st.markdown("""
     .card { background: #1e1e2f; color: #fff; padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border: 1px solid #333; }
     .chat-message { background: #1e1e2f; color: #fff; padding: 1.25rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid #667eea; }
     .user-message { background: #3b3b4f; border-left: 4px solid #764ba2; }
+    .interviewer-message { background: #2a3a4a; border-left: 4px solid #ffa500; }
     .analysis-result { background: #2b3a3a; border-left: 4px solid #28a745; }
     .error-result { background: #4a2a2a; border-left: 4px solid #dc3545; }
     .metric-card { background: #667eea; color: white; padding: 1rem; border-radius: 10px; text-align: center; }
     .section-header { color: #eee; font-size: 1.2rem; font-weight: bold; margin: 1rem 0 0.5rem; border-bottom: 1px solid #444; padding-bottom: 0.2rem; }
+    .process-indicator { background: #2a3a4a; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #17a2b8; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -103,11 +105,29 @@ def run_security_crew(tech_stack: str, api_key: str = None, serper_key: str = No
         inputs = {'tech_stack_description': tech_stack}
         crew = SecurityExpertCrew(api_key=api_key, serper_key=serper_key)
         result = crew.crew().kickoff(inputs=inputs)
+        
+        # The result now contains both interview and analysis phases
+        full_result = str(result)
+        
+        # Try to separate interview results and final analysis
+        interview_section = ""
+        analysis_section = full_result
+        
+        # Look for markers that might separate the phases
+        if "## 📋 Complete Technology Profile" in full_result:
+            parts = full_result.split("## 🎯 Executive Summary", 1)
+            if len(parts) == 2:
+                interview_section = parts[0]
+                analysis_section = "## 🎯 Executive Summary" + parts[1]
+        
         return {
             "status": "success",
-            "analysis": str(result),
+            "analysis": analysis_section,
+            "interview_results": interview_section,
+            "full_result": full_result,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "tech_stack": tech_stack
+            "tech_stack": tech_stack,
+            "analysis_type": "comprehensive"
         }
     except Exception as e:
         error_info = {
@@ -121,12 +141,26 @@ def run_security_crew(tech_stack: str, api_key: str = None, serper_key: str = No
 
 def parse_report(report_text: str) -> dict:
     sections = {}
-    pattern = r"##\s(.*?)\n(.*?)(?=\n##\s|\Z)"
+    # Updated pattern to handle both single # and ## headings
+    pattern = r"##?\s+(.*?)\n(.*?)(?=\n##?\s+|\Z)"
     matches = re.findall(pattern, report_text, re.DOTALL)
     if not matches:
         return {"📋 Full Report": report_text}
     for title, content in matches:
-        sections[title.strip()] = content.strip().replace("###", "####")
+        # Clean up the title and add appropriate emoji if missing
+        clean_title = title.strip()
+        if not any(emoji in clean_title for emoji in ['🎯', '🚨', '⚠️', '✅', '🔧', '🛡️', '📊', '🔗', '📋']):
+            if 'executive' in clean_title.lower() or 'summary' in clean_title.lower():
+                clean_title = f"🎯 {clean_title}"
+            elif 'critical' in clean_title.lower() or 'vulnerability' in clean_title.lower():
+                clean_title = f"🚨 {clean_title}"
+            elif 'recommendation' in clean_title.lower() or 'action' in clean_title.lower():
+                clean_title = f"✅ {clean_title}"
+            elif 'profile' in clean_title.lower() or 'technology' in clean_title.lower():
+                clean_title = f"📋 {clean_title}"
+            else:
+                clean_title = f"📄 {clean_title}"
+        sections[clean_title] = content.strip().replace("###", "####")
     return sections
 
 # -------------------- State Init --------------------
@@ -143,7 +177,15 @@ if "quick_input" not in st.session_state:
 st.markdown("""
 <div class="main-header">
     <h1>🛡️ AI Security Expert</h1>
-    <p>Advanced Security Analysis for Your Technology Stack</p>
+    <p>Comprehensive Security Analysis through Intelligent Requirements Gathering</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Add process explanation
+st.markdown("""
+<div class="process-indicator">
+    <strong>🔄 How it works:</strong> Our AI experts will first conduct a detailed interview to understand your specific implementation, 
+    then provide tailored security analysis based on your exact setup, versions, deployment environment, and requirements.
 </div>
 """, unsafe_allow_html=True)
 
@@ -151,7 +193,7 @@ st.markdown("""
 with st.sidebar:
     st.markdown('<div class="section-header">🔧 Configuration</div>', unsafe_allow_html=True)
     api_key = st.text_input("Gemini API Key", type="password", key="gemini_key", placeholder="Enter your Gemini API key")
-    serper_key = st.text_input("Serper API Key (Optional)", type="password", key="serper_key", placeholder="Enter your Serper API key")
+    serper_key = st.text_input("Serper API Key (Optional)", type="password", key="serper_key", placeholder="For enhanced research capabilities")
 
     st.markdown('<div class="section-header">📊 Session Stats</div>', unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -161,26 +203,25 @@ with st.sidebar:
         st.markdown(f'<div class="metric-card">{len(st.session_state.messages)}<br><small>Messages</small></div>', unsafe_allow_html=True)
     st.markdown("---")
 
-    # -------------------- PREVIOUS CHAT HISTORY (NEW CODE) --------------------
+    # -------------------- Analysis History --------------------
     st.markdown('<div class="section-header">📜 Analysis History</div>', unsafe_allow_html=True)
     history = get_history_from_db(st.session_state.session_id)
 
     if not history:
-        st.info("No analyses in the current session yet.")
+        st.info("No comprehensive analyses in the current session yet.")
     else:
         with st.expander("View Past Analyses", expanded=False):
             for i, item in enumerate(history):
-                # Using item['tech_stack'] and item['timestamp'] as conn.row_factory is set
                 tech_stack = item['tech_stack']
                 ts = item['timestamp']
+                analysis_type = item['analysis_type'] if 'analysis_type' in item.keys() else 'comprehensive'
                 
-                # Format the timestamp for better readability
                 formatted_ts = ts.strftime("%b %d, %H:%M") if isinstance(ts, datetime) else ts
 
                 st.markdown(f"""
                 <div class="card" style="margin-bottom: 10px; padding: 0.8rem;">
                     <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 5px;">{tech_stack}</p>
-                    <small><em>Analyzed: {formatted_ts}</em></small>
+                    <small><em>Type: {analysis_type.title()} | {formatted_ts}</em></small>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -188,12 +229,13 @@ with st.sidebar:
                     st.session_state.quick_input = tech_stack
                     st.rerun()
     st.markdown("---")
-    # -------------------- END OF NEW CODE --------------------
 
-    st.markdown('<div class="section-header">🚀 Quick Actions</div>', unsafe_allow_html=True)
-    if st.button("🌐 Web App Stack"): st.session_state.quick_input = "React frontend with Node.js Express backend, MongoDB database, deployed on AWS EC2"
-    if st.button("📱 Mobile App Stack"): st.session_state.quick_input = "Flutter app with Firebase backend"
-    if st.button("☁️ Cloud Native Stack"): st.session_state.quick_input = "Docker + Kubernetes + PostgreSQL + Redis on GCP"
+    st.markdown('<div class="section-header">🚀 Quick Start Examples</div>', unsafe_allow_html=True)
+    if st.button("🌐 Web Application"): st.session_state.quick_input = "React frontend with Node.js Express backend, MongoDB database"
+    if st.button("📱 Mobile Application"): st.session_state.quick_input = "Flutter mobile app with Firebase backend"
+    if st.button("☁️ Cloud Native Stack"): st.session_state.quick_input = "Microservices with Docker and Kubernetes"
+    if st.button("🤖 AI/ML Application"): st.session_state.quick_input = "Python ML application with TensorFlow and PostgreSQL"
+    if st.button("🏢 Enterprise System"): st.session_state.quick_input = "Java Spring Boot application with Oracle database"
     st.markdown("---")
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
@@ -211,16 +253,27 @@ with st.container():
                 if "analysis_data" in msg:
                     data = msg["analysis_data"]
                     if data.get("status") == "success":
-                        st.markdown(f'<div class="chat-message analysis-result"><strong>Security Expert:</strong><br><em>Stack:</em> {data["tech_stack"]} <br><small>{data["timestamp"]}</small></div>', unsafe_allow_html=True)
-                        parsed = parse_report(data["analysis"])
-                        tabs = st.tabs([f"📄 {k}" for k in parsed.keys()])
-                        for i, (tab, content) in enumerate(zip(tabs, parsed.values())):
-                            with tab: st.markdown(f'<div class="card">{content}</div>', unsafe_allow_html=True)
+                        # Show process completion indicator
+                        st.markdown(f'<div class="chat-message analysis-result"><strong>🛡️ Security Analysis Complete:</strong><br><em>Stack:</em> {data["tech_stack"]} <br><small>Analysis Type: {data.get("analysis_type", "comprehensive").title()} | {data["timestamp"]}</small></div>', unsafe_allow_html=True)
+                        
+                        # Parse and display the results in tabs
+                        if data.get("interview_results"):
+                            # Show both interview and analysis results
+                            full_parsed = parse_report(data["full_result"])
+                        else:
+                            # Show just analysis results
+                            full_parsed = parse_report(data["analysis"])
+                        
+                        if full_parsed:
+                            tabs = st.tabs([f"{k}" for k in full_parsed.keys()])
+                            for i, (tab, content) in enumerate(zip(tabs, full_parsed.values())):
+                                with tab: 
+                                    st.markdown(f'<div class="card">{content}</div>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<div class="chat-message error-result"><strong>Error:</strong><br>{data["error"]}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<div class="chat-message error-result"><strong>❌ Analysis Error:</strong><br>{data["error"]}<br><small>{data.get("timestamp", "")}</small></div>', unsafe_allow_html=True)
 
 # -------------------- Prompt Input & Processing --------------------
-prompt = st.session_state.quick_input or st.chat_input("💬 Describe your tech stack...")
+prompt = st.session_state.quick_input or st.chat_input("💬 Describe your technology stack to begin the security interview...")
 if st.session_state.quick_input:
     st.session_state.quick_input = ""
 
@@ -231,16 +284,39 @@ if prompt:
         st.markdown(f'<div class="chat-message user-message"><strong>You:</strong><br>{prompt}</div>', unsafe_allow_html=True)
 
     with st.chat_message("assistant"):
-        with st.spinner(f"Analyzing '{prompt}'..."):
+        # Show progress indicator
+        progress_container = st.empty()
+        with progress_container:
+            st.markdown("""
+            <div class="process-indicator">
+                <strong>🔄 Starting comprehensive security analysis...</strong><br>
+                <small>
+                Phase 1: Requirements Gathering Interview<br>
+                Phase 2: Detailed Security Analysis<br>
+                This may take 2-3 minutes for a thorough assessment.
+                </small>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with st.spinner("🤖 Security experts are analyzing your tech stack..."):
             data = run_security_crew(prompt, api_key or os.getenv("GEMINI_API_KEY"), serper_key or os.getenv("SERPER_API_KEY"))
 
             if data["status"] == "success":
                 st.session_state.analysis_count += 1
-                add_analysis_to_db(st.session_state.session_id, prompt, data["analysis"])
+                add_analysis_to_db(
+                    st.session_state.session_id, 
+                    prompt, 
+                    data.get("interview_results", ""), 
+                    data["analysis"],
+                    data.get("analysis_type", "comprehensive")
+                )
 
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": data.get("analysis", ""),
                 "analysis_data": data
             })
+        
+        # Clear the progress indicator
+        progress_container.empty()
     st.rerun()

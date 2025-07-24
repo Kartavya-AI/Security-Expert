@@ -4,5 +4,23 @@
         "error": "3 validation errors for Agent\nrole\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\ngoal\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing\nbackstory\n  Field required [type=missing, input_value={'config': {}, 'tools': [...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/missing",
         "timestamp": "2025-07-21 23:49:19",
         "tech_stack": null
+    },
+    {
+        "status": "error",
+        "error": "1 validation error for Crew\n  Value error, Please provide an OpenAI API key. You can get one at https://platform.openai.com/account/api-keys [type=value_error, input_value={'agents': [Agent(role=Se...': True, 'memory': True}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.11/v/value_error",
+        "timestamp": "2025-07-24 20:39:03",
+        "tech_stack": "Microservices with Docker and Kubernetes"
+    },
+    {
+        "status": "error",
+        "error": "1 validation error for Crew\nmemory\n  Input should be a valid boolean [type=bool_type, input_value=LongTermMemory(embedder_c... at 0x000001A8D60B0B90>), input_type=LongTermMemory]\n    For further information visit https://errors.pydantic.dev/2.11/v/bool_type",
+        "timestamp": "2025-07-24 20:40:41",
+        "tech_stack": "Python + crewAI"
+    },
+    {
+        "status": "error",
+        "error": "1 validation error for Crew\nmemory\n  Input should be a valid boolean [type=bool_type, input_value=LongTermMemory(embedder_c... at 0x000001A8D7173A10>), input_type=LongTermMemory]\n    For further information visit https://errors.pydantic.dev/2.11/v/bool_type",
+        "timestamp": "2025-07-24 20:42:49",
+        "tech_stack": "Microservices with Docker and Kubernetes"
     }
 ]

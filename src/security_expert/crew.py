@@ -29,10 +29,15 @@ class SecurityExpertCrew:
                 self.search_tool = SerperDevTool()
             except Exception:
                 self.search_tool = None
-
-        # Initialize LocalAgentMemory for the agent
-        # This will store memories in a local file (`agent_memory.json` by default)
         self.memory = LongTermMemory()
+
+    @agent
+    def security_interviewer(self) -> Agent:
+        return Agent(
+            config=self.agents_config['security_interviewer'],
+            llm=self.llm,
+            verbose=True
+        )
 
     @agent
     def security_analyst(self) -> Agent:
@@ -40,22 +45,29 @@ class SecurityExpertCrew:
             config=self.agents_config['security_analyst'],
             llm=self.llm,
             verbose=True,
-            # Assign memory to the agent
             memory=self.memory
+        )
+    
+    @task
+    def interview_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['interview_task'],
+            agent=self.security_interviewer()
         )
 
     @task
     def analysis_task(self) -> Task:
         return Task(
             config=self.tasks_config['analysis_task'],
-            agent=self.security_analyst()
+            agent=self.security_analyst(),
+            context=[self.interview_task()]
         )
 
     @crew
     def crew(self) -> Crew:
         return Crew(
-            agents=[self.security_analyst()],
-            tasks=[self.analysis_task()],
+            agents=[self.security_interviewer(), self.security_analyst()],
+            tasks=[self.interview_task(), self.analysis_task()],
             process=Process.sequential,
             verbose=True
         )

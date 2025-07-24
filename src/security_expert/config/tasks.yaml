@@ -1,21 +1,111 @@
+interview_task:
+  description: >
+    Conduct a comprehensive technical interview based on the initial technology stack: '{tech_stack_description}'.
+    
+    You must ask specific, targeted questions to gather complete information about:
+    
+    **Technology Details:**
+    - Exact versions of frameworks, libraries, and tools
+    - Programming language versions and specific features used
+    - Database types, versions, and configuration approaches
+    
+    **Infrastructure & Deployment:**
+    - Deployment environment (cloud provider, on-premise, hybrid)
+    - Containerization approach (Docker, Kubernetes, etc.)
+    - Load balancing and scaling mechanisms
+    - Network architecture and segmentation
+    
+    **Data & Security Context:**
+    - Types of data being processed (PII, financial, healthcare, etc.)
+    - Authentication and authorization mechanisms
+    - Compliance requirements (GDPR, HIPAA, PCI-DSS, etc.)
+    - Current security measures already in place
+    
+    **Integration & Dependencies:**
+    - Third-party services and APIs used
+    - External integrations and data flows
+    - Monitoring and logging solutions
+    
+    Ask follow-up questions based on the responses until you have a complete picture.
+    Be conversational but thorough.
+    
+  expected_output: >
+    A comprehensive technical profile document containing:
+    
+    ## 📋 Complete Technology Profile
+    
+    ### Tech Stack Details
+    - Framework/Platform: [Specific versions and configurations]
+    - Programming Languages: [Versions and key libraries]
+    - Database: [Type, version, configuration details]
+    - Additional Tools: [Build tools, testing frameworks, etc.]
+    
+    ### Infrastructure Profile
+    - Deployment: [Environment, cloud provider, scaling approach]
+    - Architecture: [Microservices, monolith, serverless, etc.]
+    - Network: [Security groups, VPC, load balancers]
+    - Storage: [File storage, CDN, backup strategies]
+    
+    ### Security Context
+    - Data Sensitivity: [Types of data, compliance needs]
+    - Current Security: [Existing measures, authentication methods]
+    - Access Patterns: [User types, admin access, API usage]
+    - Regulatory: [Compliance requirements, audit needs]
+    
+    ### Risk Profile
+    - Business Context: [Application purpose, user base size]
+    - Threat Model: [Primary concerns, attack vectors]
+    - Recovery Requirements: [RTO, RPO, backup needs]
+
 analysis_task:
   description: >
-    Analyze the following technology stack description: '{tech_stack_description}'.
-    Your analysis must be swift and focused. Produce a final report in markdown format
-    that is easy to parse and display in a tabbed UI.
+    Based on the comprehensive technical profile provided by the interviewer,
+    conduct a thorough security analysis of the complete technology stack and
+    implementation.
+    
+    Use the detailed information to identify specific vulnerabilities, 
+    configuration risks, and implementation-specific security concerns.
+    Consider the business context, compliance requirements, and threat model
+    when prioritizing risks and recommendations.
+    
   expected_output: >
-    A concise and well-structured markdown report with the following sections:
+    A detailed security analysis report in markdown format:
 
     ## 🎯 Executive Summary
-    - A brief, 2-3 sentence overview of the overall security posture.
-    - The single most critical business impact identified.
+    - Overall security posture assessment based on the specific implementation
+    - Primary business risks identified
+    - Compliance gap analysis (if applicable)
 
-    ## 🚨 Top 3 Critical Risks
-    1. [Risk 1]: Brief description of the risk and its impact.
-    2. [Risk 2]: Brief description of the risk and its impact.
-    3. [Risk 3]: Brief description of the risk and its impact.
+    ## 🚨 Critical Vulnerabilities (Top 5)
+    1. **[Vulnerability Name]**: Detailed description, attack vector, and business impact
+    2. **[Vulnerability Name]**: Detailed description, attack vector, and business impact
+    3. **[Vulnerability Name]**: Detailed description, attack vector, and business impact
+    4. **[Vulnerability Name]**: Detailed description, attack vector, and business impact
+    5. **[Vulnerability Name]**: Detailed description, attack vector, and business impact
 
-    ## ✅ Top 3 Recommendations
-    1. [Fix for Risk 1]: A specific, actionable step to mitigate the risk.
-    2. [Fix for Risk 2]: A specific, actionable step to mitigate the risk.
-    3. [Fix for Risk 3]: A specific, actionable step to mitigate the risk.
+    ## ⚠️ Medium Priority Risks
+    - List of 3-5 medium priority security concerns with brief descriptions
+
+    ## ✅ Immediate Actions (Priority 1)
+    1. **[Action]**: Specific implementation steps with expected timeline
+    2. **[Action]**: Specific implementation steps with expected timeline
+    3. **[Action]**: Specific implementation steps with expected timeline
+
+    ## 🔧 Short-term Improvements (Priority 2)
+    1. **[Improvement]**: Implementation approach and benefits
+    2. **[Improvement]**: Implementation approach and benefits
+    3. **[Improvement]**: Implementation approach and benefits
+
+    ## 🛡️ Long-term Security Strategy
+    - Strategic recommendations for ongoing security posture
+    - Monitoring and maintenance recommendations
+    - Security awareness and training needs
+
+    ## 📊 Compliance Checklist
+    [If applicable based on requirements identified in interview]
+    - Specific compliance requirements and current status
+    - Gap analysis and remediation steps
+
+    ## 🔗 Additional Resources
+    - Links to relevant security frameworks and best practices
+    - Tool recommendations specific to the technology stack
