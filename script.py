@@ -14,7 +14,6 @@ def init_db():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
 
-    # Create a simple table to store analysis results
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS analysis_history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,13 +60,6 @@ def view_history():
     conn.close()
 
 if __name__ == "__main__":
-    print("🛡️ Simple Security Analysis Database Script 🛡️")
+    print("🛡️ Security Analysis Database Script 🛡️")
     init_db()
-
-    # Example Usage
-    print("\nAdding some example data...")
-    add_analysis("React + Node.js + MongoDB", "High risk of NoSQL injection.")
-    add_analysis("Flutter + Firebase", "Check Firestore security rules for public access.")
-
-    # View all data
     view_history()
