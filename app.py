@@ -389,7 +389,6 @@ with st.sidebar:
             st.rerun()
 
 # -------------------- Chat Display --------------------
-# -------------------- Chat Display --------------------
 with st.container():
     for msg in st.session_state.messages:
         role = msg["role"]
@@ -504,3 +503,4 @@ if prompt:
                 "content": f"Thank you for your question: '{prompt}'. For detailed follow-up analysis, please start a new session or refer to the comprehensive analysis above."
             })
     st.rerun()
+
