@@ -3,5 +3,6 @@ uvicorn==0.29.0
 gunicorn==22.0.0
 pydantic==2.7.1
 python-dotenv==1.0.1
-crewai==0.35.9
+crewai==0.35.8
 crewai-tools==0.3.0
+langchain-google-genai==1.0.3

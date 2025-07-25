@@ -1,11 +1,6 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 WORKDIR /app
-
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    && rm -rf /var/lub/apt/lists/*
 
 COPY requirements.txt .
 
@@ -13,8 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p logs
+EXPOSE 8000
 
-EXPOSE 8080
-
-CMD ["sh", "-c", "gunicorn --workers 4 --threads 2 --timeout 800 --bind 0.0.0.0:8081 api:app"]
+CMD ["gunicorn", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "api:app", "--bind", "0.0.0.0:8000"]
