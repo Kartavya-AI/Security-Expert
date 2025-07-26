@@ -95,10 +95,13 @@ class HistoryResponse(BaseModel):
     status: str
     history: List[Dict[str, Any]]
 
+crew_instance: SecurityExpertCrew = None
 @app.on_event("startup")
 async def startup_event():
     print("🚀 AI Security Expert API starting up...")
     init_db()
+    global crew_instance
+    crew_instance = SecurityExpertCrew()
 
 @app.get("/", response_class=HTMLResponse, summary="API Landing Page")
 async def root() -> HTMLResponse:
