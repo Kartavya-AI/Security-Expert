@@ -1,0 +1,4 @@
+fastapi
+gunicorn
+crewai[tools]
+langchain-google-genai

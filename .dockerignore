@@ -1,0 +1,34 @@
+# Bytecode and cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Output reports and markdowns
+*.md
+
+# Images and media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+
+# Streamlit or dev scripts
+app.py
+
+# Test files and notebooks
+tests/
+*.ipynb
+
+# Knowledge files
+knowledge/
+
+# Logs
+*.log
+
+# Misc
+.DS_Store
