@@ -1,4 +1,17 @@
 fastapi
+uvicorn[standard]
 gunicorn
+pydantic
+python-dotenv
 crewai[tools]
 langchain-google-genai
+python-multipart
+httpx
+tenacity
+structlog
+python-json-logger
+prometheus-client
+psutil
+aiofiles
+slowapi
+redis

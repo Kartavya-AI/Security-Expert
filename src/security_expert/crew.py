@@ -23,7 +23,12 @@ class SecurityExpertCrew:
         if not gemini_key:
             raise ValueError("No Gemini API Key found")
 
-        self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", verbose=True, temperature=0.5)
+        llm = ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash",
+            verbose=True,
+            temperature=0.5,
+            google_api_key=os.getenv("GEMINI_API_KEY")
+        )
         self.search_tool = None
         if serper_api_key:
             try:
