@@ -24,7 +24,7 @@ class SecurityExpertCrew:
             raise ValueError("No Gemini API Key found")
 
         self.llm = ChatGoogleGenerativeAI(
-            model="google/gemini-2.5-flash",
+            model="gemini/gemini-2.5-flash-preview-04-17",
             verbose=True,
             temperature=0.5,
             google_api_key=os.getenv("GEMINI_API_KEY")
