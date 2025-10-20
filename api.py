@@ -285,7 +285,8 @@ app.add_middleware(
 # CORS middleware - configure for production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "").split(","), # Default to empty list for security
+    #allow_origins=os.getenv("ALLOWED_ORIGINS", "").split(","), # Default to empty list for security
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
