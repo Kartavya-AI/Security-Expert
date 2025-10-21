@@ -25,7 +25,7 @@ class SecurityExpertCrew:
             raise ValueError("No Gemini API Key found")
 
         self.llm = ChatLiteLLM(
-            model="gemini/gemini-2.0-flash",
+            model="gemini/gemini-1.5-flash",
             provider="google",
             api_key=gemini_key,
             temperature=0.5,
