@@ -5,7 +5,7 @@ from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
 from crewai.memory import LongTermMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_community.chat_models import ChatLiteLLM
+from langchain_litellm import ChatLiteLLM
 
 load_dotenv()
 
