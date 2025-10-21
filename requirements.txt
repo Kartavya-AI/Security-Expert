@@ -5,7 +5,8 @@ pydantic
 python-dotenv
 crewai[tools]
 langchain-google-genai
-langchain_community
+langchain-community
+langchain-litellm
 python-multipart
 httpx
 tenacity
