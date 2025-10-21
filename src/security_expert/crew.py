@@ -5,6 +5,7 @@ from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
 from crewai.memory import LongTermMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.chat_models import ChatLiteLLM
 
 load_dotenv()
 
@@ -23,7 +24,7 @@ class SecurityExpertCrew:
         if not gemini_key:
             raise ValueError("No Gemini API Key found")
 
-        self.llm = ChatGoogleGenerativeAI(
+        self.llm = ChatLiteLLM(
             model="gemini-2.0-flash",
             verbose=True,
             temperature=0.5,
